@@ -3,16 +3,14 @@ defmodule Dhola do
   Documentation for `Dhola`.
   """
 
+  use Application
+
   @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Dhola.hello()
-      :world
-
+  Starts a supervisor that spawns a process registry.
   """
-  def hello do
-    :world
+  @impl true
+  def start(_type, _args) do
+    children = [{Registry, name: Dhola, keys: :unique}]
+    Supervisor.start_link(children, strategy: :one_for_one)
   end
 end
