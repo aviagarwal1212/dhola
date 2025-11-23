@@ -11,6 +11,13 @@ defmodule Dhola.Bucket do
   end
 
   @doc """
+  Redirect `start_link` to `new`
+  """
+  def start_link(opts) do
+    new(opts)
+  end
+
+  @doc """
   Gets a value from `bucket` by `key`.
   """
   def get(bucket, key) do
