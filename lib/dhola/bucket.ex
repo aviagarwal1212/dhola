@@ -6,15 +6,8 @@ defmodule Dhola.Bucket do
 
   All options are forwarded to `Agent.start_link/2`.
   """
-  def new(opts) do
-    Agent.start_link(fn -> %{} end, opts)
-  end
-
-  @doc """
-  Redirect `start_link` to `new`
-  """
   def start_link(opts) do
-    new(opts)
+    Agent.start_link(fn -> %{} end, opts)
   end
 
   @doc """
