@@ -16,4 +16,13 @@ defmodule Dhola.BucketTest do
     Dhola.Bucket.put(config.test, "milk", 1)
     assert Dhola.Bucket.get(config.test, "milk") == 1
   end
+
+  test "deletes values by key" do
+    {:ok, bucket} = Dhola.Bucket.new([])
+    Dhola.Bucket.put(bucket, "milk", 1)
+    assert Dhola.Bucket.get(bucket, "milk") == 1
+
+    assert Dhola.Bucket.delete(bucket, "milk") == 1
+    assert Dhola.Bucket.get(bucket, "milk") == nil
+  end
 end
