@@ -11,8 +11,14 @@ defmodule Dhola do
   @impl true
   def start(_type, _args) do
     children = [
+      # spawn registry process for application
       {Registry, name: Dhola, keys: :unique},
-      {DynamicSupervisor, name: Dhola.BucketSupervisor, strategy: :one_for_one}
+      # dynamic supervisor for each bucket
+      {DynamicSupervisor, name: Dhola.BucketSupervisor, strategy: :one_for_one},
+      # task supervisor for better `Task` ergonomics
+      {Task.Supervisor, name: Dhola.ServerSupervisor},
+      # start the server when the application is started
+      Supervisor.child_spec({Task, fn -> Dhola.Server.accept(42069) end}, restart: :permanent)
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)
