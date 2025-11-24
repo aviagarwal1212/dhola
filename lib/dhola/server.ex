@@ -18,19 +18,39 @@ defmodule Dhola.Server do
   end
 
   defp serve(socket) do
-    socket
-    |> read_line()
-    |> write_line(socket)
+    msg =
+      with {:ok, data} <- read_line(socket),
+           {:ok, command} <- Dhola.Command.parse(data) do
+        Dhola.Command.run(command, socket)
+      end
+
+    write_line(socket, msg)
 
     serve(socket)
   end
 
   defp read_line(socket) do
-    {:ok, data} = :gen_tcp.recv(socket, 0)
-    data
+    :gen_tcp.recv(socket, 0)
   end
 
-  defp write_line(data, socket) do
-    :gen_tcp.send(socket, data)
+  defp write_line(_socket, :ok) do
+    :ok
+  end
+
+  defp write_line(socket, {:error, :unknown_command}) do
+    :gen_tcp.send(socket, "UNKNOWN COMMAND\r\n")
+  end
+
+  defp write_line(socket, {:error, :not_found}) do
+    :gen_tcp.send(socket, "NOT FOUND\r\n")
+  end
+
+  defp write_line(_socket, {:error, :closed}) do
+    exit(:shutdown)
+  end
+
+  defp write_line(socket, {:error, error}) do
+    :gen_tcp.send(socket, "ERROR\r\n")
+    exit(error)
   end
 end

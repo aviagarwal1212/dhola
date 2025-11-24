@@ -3,6 +3,8 @@ defmodule Dhola do
   Documentation for `Dhola`.
   """
 
+  @port 42069
+
   use Application
 
   @doc """
@@ -18,7 +20,7 @@ defmodule Dhola do
       # task supervisor for better `Task` ergonomics
       {Task.Supervisor, name: Dhola.ServerSupervisor},
       # start the server when the application is started
-      Supervisor.child_spec({Task, fn -> Dhola.Server.accept(42069) end}, restart: :permanent)
+      Supervisor.child_spec({Task, fn -> Dhola.Server.accept(@port) end}, restart: :permanent)
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)
