@@ -1,27 +1,27 @@
 defmodule Dhola.Bucket do
-  use Agent
+  use GenServer
 
   @doc """
   Starts a new bucket.
 
-  All options are forwarded to `Agent.start_link/2`.
+  All options are forwarded to `GenServer.start_link/2`.
   """
   def start_link(opts) do
-    Agent.start_link(fn -> %{} end, opts)
+    GenServer.start_link(__MODULE__, %{}, opts)
   end
 
   @doc """
   Gets a value from `bucket` by `key`.
   """
   def get(bucket, key) do
-    Agent.get(bucket, &Map.get(&1, key))
+    GenServer.call(bucket, {:get, key})
   end
 
   @doc """
   Puts the `value` for the given `key` in the `bucket`.
   """
   def put(bucket, key, value) do
-    Agent.update(bucket, &Map.put(&1, key, value))
+    GenServer.call(bucket, {:put, key, value})
   end
 
   @doc """
@@ -30,6 +30,27 @@ defmodule Dhola.Bucket do
   Returns the current value of `key` if it exists.
   """
   def delete(bucket, key) do
-    Agent.get_and_update(bucket, &Map.pop(&1, key))
+    GenServer.call(bucket, {:delete, key})
+  end
+
+  # callbacks
+
+  def init(bucket) do
+    {:ok, %{bucket: bucket}}
+  end
+
+  def handle_call({:get, key}, _from, state) do
+    value = get_in(state.bucket[key])
+    {:reply, value, state}
+  end
+
+  def handle_call({:put, key, value}, _from, state) do
+    state = put_in(state.bucket[key], value)
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:delete, key}, _from, state) do
+    {value, state} = pop_in(state.bucket[key])
+    {:reply, value, state}
   end
 end
